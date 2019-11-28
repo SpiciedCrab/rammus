@@ -133,6 +133,13 @@ Future<CommonCallbackResult> bindAccount(String account) async {
       iosError: result["iosError"]);
 }
 
+Future<CommonCallbackResult> applyAPNS() async {
+  var result = await _channel.invokeMethod("applyAPNS");
+  return CommonCallbackResult(
+      isSuccessful: result["isSuccessful"],);
+}
+
+
 Future<CommonCallbackResult> unbindAccount() async {
   var result = await _channel.invokeMethod("unbindAccount");
   return CommonCallbackResult(

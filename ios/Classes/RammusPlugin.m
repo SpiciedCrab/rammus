@@ -18,7 +18,7 @@ NSString *_isSuccessful = @"isSuccessful";
 }
 
 
-//__weak NSDictionary *_launchOptions;
+__weak UIApplication *_application;
 
 __weak FlutterMethodChannel *_methodChannel;
 UNNotificationPresentationOptions _notificationPresentationOption = UNNotificationPresentationOptionNone;
@@ -32,8 +32,8 @@ UNNotificationPresentationOptions _notificationPresentationOption = UNNotificati
 }
 
 - (void)handleMethodCall:(FlutterMethodCall *)call result:(FlutterResult)result {
-    if ([@"initCloudChannel" isEqualToString:call.method]) {
-
+    if ([@"applyAPNS" isEqualToString:call.method]) {
+        [self applyApns:call result:result];
     } else if ([@"deviceId" isEqualToString:call.method]) {
         result([CloudPushSDK getDeviceId]);
     } else if ([@"bindAccount" isEqualToString:call.method]) {
@@ -69,7 +69,8 @@ UNNotificationPresentationOptions _notificationPresentationOption = UNNotificati
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
 //    _launchOptions = launchOptions;
-    [self registerAPNS:application];
+    _application = application;
+//    [self registerAPNS:application];
     [self initCloudPush];
     [self listenerOnChannelOpened];
     [self registerMessageReceive];
@@ -81,12 +82,51 @@ UNNotificationPresentationOptions _notificationPresentationOption = UNNotificati
 
 #pragma mark APNs Register
 
-/**
- *	向APNs注册，获取deviceToken用于推送
- *
- *	@param 	application
- */
+- (void)applyApns: (FlutterMethodCall *)call result:(FlutterResult)result {
+    float systemVersionNum = [[[UIDevice currentDevice] systemVersion] floatValue];
+        if (systemVersionNum >= 10.0) {
+            // iOS 10 notifications
+            _notificationCenter = [UNUserNotificationCenter currentNotificationCenter];
+            // 创建category，并注册到通知中心
+    //        [self createCustomNotificationCategory];
+            _notificationCenter.delegate = self;
+            // 请求推送权限
+            [_notificationCenter requestAuthorizationWithOptions:UNAuthorizationOptionAlert | UNAuthorizationOptionBadge | UNAuthorizationOptionSound completionHandler:^(BOOL granted, NSError *_Nullable error) {
+                if (granted) {
+                    [self registerAPNS:_application];
+                    result(@{_isSuccessful: @YES});
+                } else {
+                    result(@{_isSuccessful: @NO});
+                }
+            }];
+        } else if (systemVersionNum >= 8.0) {
+            // iOS 8 Notifications
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored"-Wdeprecated-declarations"
+            [_application registerUserNotificationSettings:
+                    [UIUserNotificationSettings settingsForTypes:
+                                    (UIUserNotificationTypeSound | UIUserNotificationTypeAlert | UIUserNotificationTypeBadge)
+                                                      categories:nil]];
+            [_application registerForRemoteNotifications];
+            result(@{_isSuccessful: @YES});
+    #pragma clang diagnostic pop
+        } else {
+            // iOS < 8 Notifications
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored"-Wdeprecated-declarations"
+            [[UIApplication sharedApplication] registerForRemoteNotificationTypes:
+                    (UIRemoteNotificationTypeAlert | UIRemoteNotificationTypeBadge | UIRemoteNotificationTypeSound)];
+            result(@{_isSuccessful: @YES});
+    #pragma clang diagnostic pop
+        }
+}
 
+
+/**
+ *    向APNs注册，获取deviceToken用于推送
+ *
+ *    @param     application
+ */
 - (void)registerAPNS:(UIApplication *)application {
     float systemVersionNum = [[[UIDevice currentDevice] systemVersion] floatValue];
     if (systemVersionNum >= 10.0) {

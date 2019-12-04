@@ -75,11 +75,15 @@ UNNotificationPresentationOptions _notificationPresentationOption = UNNotificati
     [self listenerOnChannelOpened];
     [self registerMessageReceive];
     [CloudPushSDK sendNotificationAck:launchOptions];
-    [CloudPushSDK syncBadgeNum:1 withCallback:nil];
+    [CloudPushSDK syncBadgeNum:0 withCallback:nil];
 
     return NO;
 }
 
+
+- (void)applicationDidBecomeActive:(UIApplication *)application {
+    [CloudPushSDK syncBadgeNum:0 withCallback:nil];
+}
 
 #pragma mark APNs Register
 

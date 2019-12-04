@@ -163,6 +163,15 @@ Future<CommonCallbackResult> bindPhoneNumber(String phoneNumber) async {
       iosError: result["iosError"]);
 }
 
+Future<CommonCallbackResult> clearBadge() async {
+  var result = await _channel.invokeMethod("clearBadgeNum", null);
+  return CommonCallbackResult(
+      isSuccessful: true,
+      response: null,
+      errorCode: null,
+      errorMessage: null,
+      iosError: null);
+}
 
 ///Android only
 

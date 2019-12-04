@@ -61,7 +61,10 @@ UNNotificationPresentationOptions _notificationPresentationOption = UNNotificati
     }else if([@"setupNotificationManager" isEqualToString:call.method]){
         result(@YES);
         
-    }else {
+    } else if ([@"clearBadgeNum" isEqualToString:call.method]) {
+        [CloudPushSDK syncBadgeNum:0 withCallback:nil];
+        result(@YES);
+    } else {
         result(FlutterMethodNotImplemented);
     }
 }
@@ -75,14 +78,8 @@ UNNotificationPresentationOptions _notificationPresentationOption = UNNotificati
     [self listenerOnChannelOpened];
     [self registerMessageReceive];
     [CloudPushSDK sendNotificationAck:launchOptions];
-    [CloudPushSDK syncBadgeNum:0 withCallback:nil];
 
     return NO;
-}
-
-
-- (void)applicationDidBecomeActive:(UIApplication *)application {
-    [CloudPushSDK syncBadgeNum:0 withCallback:nil];
 }
 
 #pragma mark APNs Register

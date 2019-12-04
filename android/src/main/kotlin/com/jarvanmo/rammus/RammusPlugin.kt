@@ -45,11 +45,17 @@ class RammusPlugin(private val registrar: Registrar, private val methodChannel: 
             call.method == "setupNotificationManager" -> setupNotificationManager(call, result)
             call.method == "bindPhoneNumber" -> bindPhoneNumber(call,result)
             call.method == "unbindPhoneNumber" ->unbindPhoneNumber(result)
+            call.method == "clearBadgeNum" ->clearBadgeNum(result)
             else -> result.notImplemented()
         }
 
     }
 
+    private  fun clearBadgeNum(result: Result){
+        val pushService = PushServiceFactory.getCloudPushService()
+        pushService.clearNotifications()
+        result.success(true)
+    }
 
     private fun initCloudChannel(call: MethodCall, result: Result) {
         result.success(true)

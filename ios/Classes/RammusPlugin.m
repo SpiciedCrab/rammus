@@ -75,6 +75,7 @@ UNNotificationPresentationOptions _notificationPresentationOption = UNNotificati
     [self listenerOnChannelOpened];
     [self registerMessageReceive];
     [CloudPushSDK sendNotificationAck:launchOptions];
+    [CloudPushSDK syncBadgeNum:0 withCallback:nil];
 
     return NO;
 }

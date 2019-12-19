@@ -63,6 +63,7 @@ UNNotificationPresentationOptions _notificationPresentationOption = UNNotificati
         
     } else if ([@"clearBadgeNum" isEqualToString:call.method]) {
         [CloudPushSDK syncBadgeNum:0 withCallback:nil];
+        [UIApplication sharedApplication].applicationIconBadgeNumber = 0 ;
         result(@YES);
     } else {
         result(FlutterMethodNotImplemented);
